@@ -14,7 +14,9 @@ router.post("/register", async (req, res) => {
   try {
     const existingUser = await User.findOne({ email: req.body.email });
     if (existingUser) {
-      return res.status(400).json({ success: false, message: "Email already registered" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Email already registered" });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -25,6 +27,7 @@ router.post("/register", async (req, res) => {
       lastName: req.body.lastName,
       email: req.body.email,
       password: hashedPassword,
+      emailToken: crypto.randomBytes(64).toString("hex"),
     });
 
     await user.save();
