@@ -32,14 +32,46 @@ router.post("/register", async (req, res) => {
 
     await user.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message:
         "User registered successfully. Check your email for verification.",
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+});
+
+// user login
+router.post("/login", async (req, res) => {
+  try {
+    const findUser = await User.findOne({ email: req.body.email });
+
+    if (findUser) {
+      const validPassword = await bcrypt.compare(
+        req.body.password,
+        findUser.password
+      );
+
+      if (validPassword) {
+        return res.status(200).json({ success: true });
+      } else {
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid Password" });
+      }
+    } else {
+      return res
+        .status(404)
+        .json({ success: false, message: "Email Not Found" });
+    }
+    
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Login Fail" });
   }
 });
 
