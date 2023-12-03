@@ -1,14 +1,43 @@
-import React from "react";
+import axios from "axios";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
 function UserLogin() {
+  const [message, setMessage] = useState("");
+  const [loginData, setLoginData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const onInputChange = (e) => {
+    setLoginData({ ...loginData, [e.target.name]: e.target.value });
+  };
+
+  const submit = async (e) => {
+    e.preventDefault();
+
+    await axios
+      .post("/login", loginData)
+      .then((response) => {
+        if (response.data.success) {
+          window.location.href = "/tasks"
+        } else {
+          setMessage(response.data.message);
+        }
+      })
+      .catch((error) => {
+        const errorMessage = error.response ? error.response.data.message : 'Network error';
+        setMessage(errorMessage);
+      });
+  };
+
   return (
     <div>
       <section
         className="bg-gray-50 dark:bg-gray-900"
         style={{ padding: "100px 420px" }}
       >
-        <div style={{ textAlign: "center" }}></div>
+        <div style={{ textAlign: "center" }}>{message}</div>
         <br />
         <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
           <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
@@ -16,7 +45,10 @@ function UserLogin() {
               <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
                 Sign in to your account
               </h1>
-              <form className="space-y-4 md:space-y-6">
+              <form
+                className="space-y-4 md:space-y-6"
+                onSubmit={(e) => submit(e)}
+              >
                 <div>
                   <label
                     htmlFor="email"
@@ -28,6 +60,8 @@ function UserLogin() {
                     type="email"
                     name="email"
                     id="email"
+                    value={loginData.email}
+                    onChange={(e) => onInputChange(e)}
                     className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="name@company.com"
                     required=""
@@ -44,6 +78,8 @@ function UserLogin() {
                     type="password"
                     name="password"
                     id="password"
+                    value={loginData.password}
+                    onChange={(e) => onInputChange(e)}
                     placeholder="••••••••"
                     className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     required=""
