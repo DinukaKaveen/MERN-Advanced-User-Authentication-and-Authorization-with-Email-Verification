@@ -46,6 +46,11 @@ router.post("/register", async (req, res) => {
 });
 
 // user login
+
+const createToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET_KEY);
+};
+
 router.post("/login", async (req, res) => {
   try {
     const findUser = await User.findOne({ email: req.body.email });
@@ -57,7 +62,12 @@ router.post("/login", async (req, res) => {
       );
 
       if (validPassword) {
+
+        //create token
+        const token = createToken(findUser._id);
+
         return res.status(200).json({ success: true });
+
       } else {
         return res
           .status(400)
@@ -68,7 +78,6 @@ router.post("/login", async (req, res) => {
         .status(404)
         .json({ success: false, message: "Email Not Found" });
     }
-    
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Login Fail" });
