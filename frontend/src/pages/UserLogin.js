@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
 function UserLogin() {
+
   const [message, setMessage] = useState("");
   const [loginData, setLoginData] = useState({
     email: "",
@@ -20,13 +21,15 @@ function UserLogin() {
       .post("/login", loginData)
       .then((response) => {
         if (response.data.success) {
-          window.location.href = "/dashboard"
+          window.location.href = "/dashboard";
         } else {
           setMessage(response.data.message);
         }
       })
       .catch((error) => {
-        const errorMessage = error.response ? error.response.data.message : 'Network error';
+        const errorMessage = error.response
+          ? error.response.data.message
+          : "Network error";
         setMessage(errorMessage);
       });
   };

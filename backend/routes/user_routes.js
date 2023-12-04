@@ -6,6 +6,7 @@ const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
+const cookie = require("cookie-parser");
 
 const User = require("../models/user");
 
@@ -46,9 +47,10 @@ router.post("/register", async (req, res) => {
 });
 
 // user login
-
 const createToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET_KEY);
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  });
 };
 
 router.post("/login", async (req, res) => {
@@ -62,12 +64,13 @@ router.post("/login", async (req, res) => {
       );
 
       if (validPassword) {
-
         //create token
         const token = createToken(findUser._id);
+        //store token in cookie
+        res.cookie("access-token", token);
+        console.log(token);
 
         return res.status(200).json({ success: true });
-
       } else {
         return res
           .status(400)
@@ -81,6 +84,29 @@ router.post("/login", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Login Fail" });
+  }
+});
+
+// verify token when laoding dashboard
+router.get("/verifyToken", async (req, res) => {  
+  try {
+    const token = req.cookies["access-token"];
+
+    if (token) {
+      const validateToken = await jwt.verify(token, process.env.JWT_SECRET);
+      if (validateToken) {
+        res.json({ verifyToken: true, message: "Token Verified" });
+        //redirect to dashboard
+      } else {
+        res.json({ verifyToken: false, message: "Token Expired" });
+        // redirect to login
+      }
+    } else {
+      res.json({ verifyToken: false, message: "Token Not Found" });
+      // redirect to login
+    }
+  } catch (error) {
+    console.error(error);
   }
 });
 
