@@ -33,14 +33,18 @@ router.post("/register", async (req, res) => {
 
     await user.save();
 
-    sendVerificationEmail(user.firstName, user.email, user.emailToken);
+    sendVerificationEmail(
+      user._id,
+      user.firstName,
+      user.email,
+      user.emailToken
+    );
 
     return res.status(200).json({
       success: true,
       message:
         "User registered successfully. Check your email for verification.",
     });
-
   } catch (error) {
     console.error(error);
     return res
@@ -90,7 +94,23 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// verify email
+router.get("/:id/verify/:token", async (req, res) => {
+  try {
+    const user = await User.findOne({ _id: req.params.id });
 
+    if (user) {
+      await User.updateOne({ _id: user._id, verified: true, emailToken: null });
+      res.json({ success: true, message: "Account Verified Successfully..." });
+    } else {
+      res.json({ success: false, message: "404 User Not Found !" });
+    }
+
+  } catch (error) {
+    console.error(error);
+    res.json({ success: false, message: "Internal Server Error !" });
+  }
+});
 
 // verify token when laoding dashboard
 router.get("/verifyToken", async (req, res) => {
@@ -115,11 +135,10 @@ router.get("/verifyToken", async (req, res) => {
   }
 });
 
-
 //-------------------------------------
 // Email sending function (nodemailer)
 //-------------------------------------
-function sendVerificationEmail(user, email, emailToken) {
+function sendVerificationEmail(userId, userfirstName, email, emailToken) {
   const transporter = nodemailer.createTransport({
     host: process.env.HOST,
     service: process.env.SERVICE,
@@ -131,7 +150,7 @@ function sendVerificationEmail(user, email, emailToken) {
     },
   });
 
-  const verificationLink = `${process.env.FRONT_END_URL}/verify/${emailToken}`;
+  const verificationLink = `${process.env.FRONT_END_URL}/${userId}/verify/${emailToken}`;
 
   // Send verification email
   transporter
@@ -139,7 +158,7 @@ function sendVerificationEmail(user, email, emailToken) {
       from: process.env.USER,
       to: email,
       subject: "Email Verification",
-      html: `<h2>Dear ${user},</h2>
+      html: `<h2>Dear ${userfirstName},</h2>
              <h3>Thanks for registering on our site.</h3>
              <h3>Click <a href="${verificationLink}">here</a> to verify your email.</h3>`,
     })
