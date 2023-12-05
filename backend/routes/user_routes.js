@@ -33,11 +33,14 @@ router.post("/register", async (req, res) => {
 
     await user.save();
 
+    sendVerificationEmail(user.firstName, user.email, user.emailToken);
+
     return res.status(200).json({
       success: true,
       message:
         "User registered successfully. Check your email for verification.",
     });
+
   } catch (error) {
     console.error(error);
     return res
@@ -87,8 +90,10 @@ router.post("/login", async (req, res) => {
   }
 });
 
+
+
 // verify token when laoding dashboard
-router.get("/verifyToken", async (req, res) => {  
+router.get("/verifyToken", async (req, res) => {
   try {
     const token = req.cookies["access-token"];
 
@@ -109,5 +114,41 @@ router.get("/verifyToken", async (req, res) => {
     console.error(error);
   }
 });
+
+
+//-------------------------------------
+// Email sending function (nodemailer)
+//-------------------------------------
+function sendVerificationEmail(user, email, emailToken) {
+  const transporter = nodemailer.createTransport({
+    host: process.env.HOST,
+    service: process.env.SERVICE,
+    port: Number(process.env.EMAIL_PORT),
+    secure: Boolean(process.env.SECURE),
+    auth: {
+      user: process.env.USER,
+      pass: process.env.PASS,
+    },
+  });
+
+  const verificationLink = `${process.env.FRONT_END_URL}/verify/${emailToken}`;
+
+  // Send verification email
+  transporter
+    .sendMail({
+      from: process.env.USER,
+      to: email,
+      subject: "Email Verification",
+      html: `<h2>Dear ${user},</h2>
+             <h3>Thanks for registering on our site.</h3>
+             <h3>Click <a href="${verificationLink}">here</a> to verify your email.</h3>`,
+    })
+    .then(() => {
+      console.log("Email sent successfully");
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+}
 
 module.exports = router;
