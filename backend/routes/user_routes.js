@@ -64,7 +64,18 @@ router.post("/login", async (req, res) => {
   try {
     const findUser = await User.findOne({ email: req.body.email });
 
+    //check password
     if (findUser) {
+
+      //check user verified
+      if (!findUser.verified) {
+        return res.json({
+          success: false,
+          message: "Please Check Your Email to Verify Your Account",
+        });
+      }
+
+      //check password
       const validPassword = await bcrypt.compare(
         req.body.password,
         findUser.password
@@ -88,6 +99,7 @@ router.post("/login", async (req, res) => {
         .status(404)
         .json({ success: false, message: "Email Not Found" });
     }
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Login Fail" });
@@ -105,7 +117,6 @@ router.get("/:id/verify/:token", async (req, res) => {
     } else {
       res.json({ success: false, message: "404 User Not Found !" });
     }
-
   } catch (error) {
     console.error(error);
     res.json({ success: false, message: "Internal Server Error !" });
