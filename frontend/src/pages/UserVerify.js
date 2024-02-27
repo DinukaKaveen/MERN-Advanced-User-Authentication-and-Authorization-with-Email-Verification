@@ -9,7 +9,7 @@ function UserVerify() {
   useEffect(() => {
     const verifyUser = async () => {
       await axios
-        .get(`/${params.id}/verify/${params.token}`)
+        .get(`http://localhost:8000/${params.id}/verify/${params.token}`)
         .then((response) => {
           setMessage(response.data.message);
         })

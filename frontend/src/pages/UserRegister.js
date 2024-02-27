@@ -18,7 +18,7 @@ function UserRegister() {
   const submit = async (e) => {
     e.preventDefault();
     await axios
-      .post("/register", userDetails)
+      .post("http://localhost:8000/register", userDetails)
       .then((response) => {
         if (response.data.success) {
           setMessage(response.data.message);

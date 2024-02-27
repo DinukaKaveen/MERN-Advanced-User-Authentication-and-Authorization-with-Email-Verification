@@ -9,7 +9,7 @@ function Dashboard() {
 
   const verifyToken = async () => {
     await axios
-      .get("/verifyToken")
+      .get("http://localhost:8000/verifyToken")
       .then((response) => {
         if (response.data.verifyToken) {
           //window.location.href = "/dashboard";

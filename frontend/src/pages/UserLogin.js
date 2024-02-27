@@ -18,7 +18,7 @@ function UserLogin() {
     e.preventDefault();
 
     await axios
-      .post("/login", loginData)
+      .post("http://localhost:8000/login", loginData)
       .then((response) => {
         if (response.data.success) {
           window.location.href = "/dashboard";
