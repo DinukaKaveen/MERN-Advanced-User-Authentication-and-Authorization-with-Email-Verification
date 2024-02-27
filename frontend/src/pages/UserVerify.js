@@ -7,19 +7,18 @@ function UserVerify() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
+    const verifyUser = async () => {
+      await axios
+        .get(`/${params.id}/verify/${params.token}`)
+        .then((response) => {
+          setMessage(response.data.message);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    };
     verifyUser();
-  }, []); 
-
-  const verifyUser = async () => {
-    await axios
-      .get(`/${params.id}/verify/${params.token}`)
-      .then((response) => {
-        setMessage(response.data.message);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  };
+  }, [params.id, params.token]);
 
   return (
     <div>
