@@ -21,7 +21,7 @@ app.use(cors(
 ));
 
 //route MiddleWare
-app.use(userRoutes);
+app.use("/api", userRoutes);
 
 // coonect app with MongoDB
 const PORT = process.env.PORT;

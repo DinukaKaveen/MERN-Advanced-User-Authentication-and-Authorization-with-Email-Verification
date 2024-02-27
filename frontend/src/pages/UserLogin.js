@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 function UserLogin() {
 
   axios.defaults.withCredentials = true;
-  
+
   const [message, setMessage] = useState("");
   const [loginData, setLoginData] = useState({
     email: "",
@@ -20,7 +20,7 @@ function UserLogin() {
     e.preventDefault();
 
     await axios
-      .post("http://localhost:8000/login", loginData)
+      .post("http://localhost:8000/api/login", loginData)
       .then((response) => {
         if (response.data.success) {
           window.location.href = "/dashboard";
