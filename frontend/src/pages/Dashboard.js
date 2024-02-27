@@ -3,6 +3,8 @@ import React, { useEffect } from "react";
 
 function Dashboard() {
 
+  axios.defaults.withCredentials = true;
+
   useEffect(() => {
     verifyToken();
   }, []);
