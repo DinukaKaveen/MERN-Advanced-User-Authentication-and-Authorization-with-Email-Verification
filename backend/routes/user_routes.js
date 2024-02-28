@@ -149,15 +149,22 @@ router.get("/verifyToken_1", async (req, res, next) => {
   const token = headers.split(" ")[1];
 
   if (token) {
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-      if (err) {
-        res.json({ verifyToken: false, message: "Token Invalid or Expired" });
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const user = await User.findById(decoded.id);
+
+      if (!user) {
+        res.status(404).json({ verifyToken: false, message: "User Not Found" });
       } else {
-        res
-          .status(200)
-          .json({ verifyToken: true, user: user, message: "Token Verified" });
+        res.status(200).json({
+          verifyToken: true,
+          user: user,
+          message: "Token and User Verified",
+        }); 
       }
-    });
+    } catch (err) {
+      res.json({ verifyToken: false, message: "Token Invalid or Expired" });
+    }
   } else {
     res.status(404).json({ verifyToken: false, message: "Token Not Found" });
   }
