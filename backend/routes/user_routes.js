@@ -66,7 +66,6 @@ router.post("/login", async (req, res) => {
 
     //check password
     if (findUser) {
-
       //check user verified
       if (!findUser.verified) {
         return res.json({
@@ -99,7 +98,6 @@ router.post("/login", async (req, res) => {
         .status(404)
         .json({ success: false, message: "Email Not Found" });
     }
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Login Fail" });
@@ -143,6 +141,25 @@ router.get("/verifyToken", async (req, res) => {
     }
   } catch (error) {
     console.error(error);
+  }
+});
+
+router.get("/verifyToken_1", async (req, res, next) => {
+  const headers = req.headers["authorization"];
+  const token = headers.split(" ")[1];
+
+  if (token) {
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+      if (err) {
+        res.json({ verifyToken: false, message: "Token Invalid or Expired" });
+      } else {
+        res
+          .status(200)
+          .json({ verifyToken: true, user: user, message: "Token Verified" });
+      }
+    });
+  } else {
+    res.status(404).json({ verifyToken: false, message: "Token Not Found" });
   }
 });
 
