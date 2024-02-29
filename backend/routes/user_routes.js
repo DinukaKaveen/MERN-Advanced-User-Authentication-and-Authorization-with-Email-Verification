@@ -132,7 +132,7 @@ router.get("/verifyToken", async (req, res) => {
         res.json({ verifyToken: true, message: "Token Verified" });
         //redirect to dashboard
       } else {
-        res.json({ verifyToken: false, message: "Token Expired" });
+        res.json({ verifyToken: false, message: "Invalid Token or Expired" });
         // redirect to login
       }
     } else {
@@ -141,6 +141,7 @@ router.get("/verifyToken", async (req, res) => {
     }
   } catch (error) {
     console.error(error);
+    res.json({ verifyToken: false, message: "Token Expired" });
   }
 });
 
