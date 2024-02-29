@@ -84,10 +84,15 @@ router.post("/login", async (req, res) => {
         //create token
         const token = createToken(findUser._id);
         //store token in cookie
-        res.cookie("access-token", token);
+        res.cookie(String(findUser._id), token, {
+          path: "/",
+          expires: new Date(Date.now() + 1000 * 30),
+          httpOnly: true,
+          sameSite: "lax",
+        });
         console.log(token);
 
-        return res.status(200).json({ success: true });
+        return res.status(200).json({ success: true, user: findUser, token });
       } else {
         return res
           .status(400)
@@ -146,8 +151,8 @@ router.get("/verifyToken", async (req, res) => {
 });
 
 router.get("/verifyToken_1", async (req, res, next) => {
-  const headers = req.headers["authorization"];
-  const token = headers.split(" ")[1];
+  const cookies = req.headers.cookie;
+  const token = cookies.split("=")[1]; 
 
   if (token) {
     try {
@@ -161,7 +166,7 @@ router.get("/verifyToken_1", async (req, res, next) => {
           verifyToken: true,
           user: user,
           message: "Token and User Verified",
-        }); 
+        });
       }
     } catch (err) {
       res.json({ verifyToken: false, message: "Token Invalid or Expired" });
