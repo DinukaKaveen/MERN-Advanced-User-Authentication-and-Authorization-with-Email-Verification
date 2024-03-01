@@ -151,7 +151,7 @@ router.get("/verifyToken", async (req, res) => {
   }
 });
 
-router.get("/verify_token", async (req, res, next) => {
+router.get("/auth_user", async (req, res, next) => {
   const cookies = req.headers.cookie;
   const token = cookies.split("=")[1];
 
@@ -161,19 +161,19 @@ router.get("/verify_token", async (req, res, next) => {
       const user = await User.findById(decoded.id);
 
       if (!user) {
-        res.status(404).json({ verifyToken: false, message: "User Not Found" });
+        res.status(404).json({ authUser: false, message: "User Not Found" });
       } else {
         res.status(200).json({
-          verifyToken: true,
+          authUser: true,
           user: user,
           message: "Token and User Verified",
         });
       }
     } catch (err) {
-      res.json({ verifyToken: false, message: "Token Invalid or Expired" });
+      res.json({ authUser: false, message: "Token Invalid or Expired" });
     }
   } else {
-    res.status(404).json({ verifyToken: false, message: "Token Not Found" });
+    res.status(404).json({ authUser: false, message: "Token Not Found" });
   }
 });
 
@@ -189,7 +189,7 @@ router.get("/refresh", async (req, res) => {
 
   jwt.verify(preToken, process.env.JWT_SECRET, (err, decoded) => {
     if (err) {
-      res.status(403).json({ message: "Authentication Failed" });
+      res.status(403).json({ refresh: false, message: "Authentication Failed" });
     } else {
       res.clearCookie(String(decoded.id));
       req.cookies[String(decoded.id)] = "";
@@ -202,6 +202,7 @@ router.get("/refresh", async (req, res) => {
         sameSite: "lax",
       });
       console.log(newToken);
+      return res.status(200).json({ refresh: true, message: "Token Refreshed" });
     }
   });
 });
