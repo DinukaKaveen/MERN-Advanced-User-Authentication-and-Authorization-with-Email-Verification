@@ -182,14 +182,14 @@ router.get("/refresh", async (req, res) => {
   const preToken = cookies.split("=")[1];
 
   if (!preToken) {
-    return res
-      .status(404)
-      .json({ refresh: false, message: "Token Not Found" });
+    return res.status(404).json({ refresh: false, message: "Token Not Found" });
   }
 
   jwt.verify(preToken, process.env.JWT_SECRET, (err, decoded) => {
     if (err) {
-      res.status(403).json({ refresh: false, message: "Authentication Failed" });
+      res
+        .status(403)
+        .json({ refresh: false, message: "Authentication Failed" });
     } else {
       res.clearCookie(String(decoded.id));
       req.cookies[String(decoded.id)] = "";
@@ -202,10 +202,12 @@ router.get("/refresh", async (req, res) => {
         sameSite: "lax",
       });
       console.log("Refreshed Token\n", newToken);
-      return res.status(200).json({ refresh: true, message: "Token Refreshed" });
+      return res
+        .status(200)
+        .json({ refresh: true, message: "Token Refreshed" });
     }
   });
-});  
+});
 
 //-------------------------------------
 // Email sending function (nodemailer)
