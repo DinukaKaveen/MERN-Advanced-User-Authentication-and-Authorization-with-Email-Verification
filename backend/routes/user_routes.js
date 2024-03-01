@@ -53,13 +53,14 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// user login
+// create token
 const createToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 };
 
+// user login
 router.post("/login", async (req, res) => {
   try {
     const findUser = await User.findOne({ email: req.body.email });
@@ -150,9 +151,9 @@ router.get("/verifyToken", async (req, res) => {
   }
 });
 
-router.get("/verifyToken_1", async (req, res, next) => {
+router.get("/verify_token", async (req, res, next) => {
   const cookies = req.headers.cookie;
-  const token = cookies.split("=")[1]; 
+  const token = cookies.split("=")[1];
 
   if (token) {
     try {
@@ -174,6 +175,35 @@ router.get("/verifyToken_1", async (req, res, next) => {
   } else {
     res.status(404).json({ verifyToken: false, message: "Token Not Found" });
   }
+});
+
+router.get("/refresh", async (req, res) => {
+  const cookies = req.headers.cookie;
+  const preToken = cookies.split("=")[1];
+
+  if (!preToken) {
+    return res
+      .status(404)
+      .json({ refresh: false, message: "Token Not Found" });
+  }
+
+  jwt.verify(preToken, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      res.status(403).json({ message: "Authentication Failed" });
+    } else {
+      res.clearCookie(String(decoded.id));
+      req.cookies[String(decoded.id)] = "";
+
+      const newToken = createToken(decoded.id);
+      res.cookie(String(decoded.id), newToken, {
+        path: "/",
+        expires: new Date(Date.now() + 1000 * 30),
+        httpOnly: true,
+        sameSite: "lax",
+      });
+      console.log(newToken);
+    }
+  });
 });
 
 //-------------------------------------
