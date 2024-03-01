@@ -1,24 +1,34 @@
 import axios from "axios";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Dashboard() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState();
 
   axios.defaults.withCredentials = true;
+  let firstRender = true;
 
   useEffect(() => {
-    verifyToken();
+    if (firstRender) {
+      firstRender = false;
+      authUser();
+    }
+    let interval = setInterval(() => {
+      refresh();
+    }, 1000 * 28);
+    return () => clearInterval(interval);
+
   }, []);
 
-  const verifyToken = async () => {
+  const authUser = async () => {
     await axios
-      .get("http://localhost:8000/api/verifyToken")
+      .get("http://localhost:8000/api/auth_user")
       .then((response) => {
-        if (response.data.verifyToken) {
-          //window.location.href = "/dashboard";
+        if (response.data.authUser) {
+          setUser(response.data.user);
           console.log(response.data.message);
-
         } else {
-          window.location.href = "/";
           console.log(response.data.message);
         }
       })
@@ -27,9 +37,18 @@ function Dashboard() {
       });
   };
 
+  const refresh = async () => {
+    await axios
+      .get("http://localhost:8000/api/refresh")
+      .then((response) => {
+        setUser(response.data.user);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
 
-  return (
-    <div>Dashboard</div>
-  )}
+  return <div>Dashboard</div>;
+}
 
 export default Dashboard;
