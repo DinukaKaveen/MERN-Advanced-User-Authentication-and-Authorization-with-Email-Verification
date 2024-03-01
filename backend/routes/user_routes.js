@@ -91,7 +91,7 @@ router.post("/login", async (req, res) => {
           httpOnly: true,
           sameSite: "lax",
         });
-        console.log(token);
+        console.log("Generated Token\n", token);
 
         return res.status(200).json({ success: true, user: findUser, token });
       } else {
@@ -201,7 +201,7 @@ router.get("/refresh", async (req, res) => {
         httpOnly: true,
         sameSite: "lax",
       });
-      console.log(newToken);
+      console.log("Refreshed Token\n", newToken);
       return res.status(200).json({ refresh: true, message: "Token Refreshed" });
     }
   });
