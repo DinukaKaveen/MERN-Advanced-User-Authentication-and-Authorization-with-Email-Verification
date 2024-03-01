@@ -87,7 +87,7 @@ router.post("/login", async (req, res) => {
         //store token in cookie
         res.cookie(String(findUser._id), token, {
           path: "/",
-          expires: new Date(Date.now() + 1000 * 30),
+          expires: new Date(Date.now() + 1000 * 40),
           httpOnly: true,
           sameSite: "lax",
         });
@@ -197,7 +197,7 @@ router.get("/refresh", async (req, res) => {
       const newToken = createToken(decoded.id);
       res.cookie(String(decoded.id), newToken, {
         path: "/",
-        expires: new Date(Date.now() + 1000 * 30),
+        expires: new Date(Date.now() + 1000 * 40),
         httpOnly: true,
         sameSite: "lax",
       });
@@ -205,7 +205,7 @@ router.get("/refresh", async (req, res) => {
       return res.status(200).json({ refresh: true, message: "Token Refreshed" });
     }
   });
-});
+});  
 
 //-------------------------------------
 // Email sending function (nodemailer)
