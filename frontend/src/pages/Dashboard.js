@@ -42,7 +42,7 @@ function Dashboard() {
       refresh().then((data) => {
         //setUser(data.user);
       });
-    }, 1000 * 25);
+    }, 1000 * 60 * 10);
 
     return () => clearInterval(interval);
   }, []);

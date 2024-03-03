@@ -6,9 +6,17 @@ const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
-const cookie = require("cookie-parser");
 
 const User = require("../models/user");
+
+const cookieExpireIn = 1000 * 60 * 15;
+
+// create token
+const createToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  });
+};
 
 // user register
 router.post("/register", async (req, res) => {
@@ -53,13 +61,6 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// create token
-const createToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
-  });
-};
-
 // user login
 router.post("/login", async (req, res) => {
   try {
@@ -87,7 +88,7 @@ router.post("/login", async (req, res) => {
         //store token in cookie
         res.cookie(String(findUser._id), token, {
           path: "/",
-          expires: new Date(Date.now() + 1000 * 40),
+          expires: new Date(Date.now() + cookieExpireIn),
           httpOnly: true,
           sameSite: "lax",
         });
@@ -197,7 +198,7 @@ router.get("/refresh", async (req, res) => {
       const newToken = createToken(decoded.id);
       res.cookie(String(decoded.id), newToken, {
         path: "/",
-        expires: new Date(Date.now() + 1000 * 60 * 5),
+        expires: new Date(Date.now() + cookieExpireIn),
         httpOnly: true,
         sameSite: "lax",
       });
