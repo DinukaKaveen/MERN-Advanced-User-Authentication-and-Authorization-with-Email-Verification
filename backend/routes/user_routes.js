@@ -197,7 +197,7 @@ router.get("/refresh", async (req, res) => {
       const newToken = createToken(decoded.id);
       res.cookie(String(decoded.id), newToken, {
         path: "/",
-        expires: new Date(Date.now() + 1000 * 40),
+        expires: new Date(Date.now() + 1000 * 60 * 5),
         httpOnly: true,
         sameSite: "lax",
       });
