@@ -94,8 +94,6 @@ router.post("/login", async (req, res) => {
         });
         console.log("Generated Token\n", token);
 
-        
-
         return res.status(200).json({ success: true, user: findUser, token });
       } else {
         return res
@@ -170,7 +168,6 @@ router.get("/auth_user", async (req, res, next) => {
       } else {
         res.status(200).json({
           authUser: true,
-          user: user,
           message: "Token and User Verified",
         });
       }
