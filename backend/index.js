@@ -5,6 +5,8 @@ const bodyParser = require("body-parser"); //body-parser is used to convert json
 const userRoutes = require("./routes/user_routes");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const expressSession = require("express-session");
+const MongoStore = require("connect-mongo");
 
 const app = express();
 
@@ -12,13 +14,36 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(express.json());
-app.use(cors(
-  {
+app.use(
+  cors({
     origin: ["http://localhost:3000"],
     methods: ["POST", "GET", "PUT", "DELETE"],
-    credentials: true
+    credentials: true,
+  })
+);
+// Set up sessions
+app.use(
+  expressSession({
+    name: "session",
+    secret: process.env.JWT_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({ mongoUrl: process.env.DB }),
+  })
+);
+// Middleware to generate and attach session identifier to each request
+app.use((req, res, next) => {
+  if (!req.session.sessionId) {
+    req.session.sessionId = generateSessionId(); // Implement a function to generate a unique session ID
+    console.log(req.session.sessionId);
   }
-));
+  next();
+});
+// Function to generate a unique session ID
+function generateSessionId() {
+  return Math.random().toString(36).substring(2, 15) +
+         Math.random().toString(36).substring(2, 15);
+}
 
 //route MiddleWare
 app.use("/api", userRoutes);

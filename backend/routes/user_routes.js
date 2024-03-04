@@ -6,6 +6,7 @@ const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
+const cookie = require("cookie");
 
 const User = require("../models/user");
 
@@ -66,7 +67,6 @@ router.post("/login", async (req, res) => {
   try {
     const findUser = await User.findOne({ email: req.body.email });
 
-    //check password
     if (findUser) {
       //check user verified
       if (!findUser.verified) {
@@ -86,13 +86,15 @@ router.post("/login", async (req, res) => {
         //create token
         const token = createToken(findUser._id);
         //store token in cookie
-        res.cookie(String(findUser._id), token, {
+        res.cookie("access_token", token, {
           path: "/",
           expires: new Date(Date.now() + cookieExpireIn),
           httpOnly: true,
           sameSite: "lax",
         });
         console.log("Generated Token\n", token);
+
+        
 
         return res.status(200).json({ success: true, user: findUser, token });
       } else {
@@ -154,7 +156,9 @@ router.get("/verifyToken", async (req, res) => {
 
 router.get("/auth_user", async (req, res, next) => {
   const cookies = req.headers.cookie;
-  const token = cookies.split("=")[1];
+  const parsedCookies = cookie.parse(cookies);
+  //const token = cookies.split("=")[1];
+  const token = parsedCookies["access_token"];
 
   if (token) {
     try {
@@ -180,7 +184,9 @@ router.get("/auth_user", async (req, res, next) => {
 
 router.get("/refresh", async (req, res) => {
   const cookies = req.headers.cookie;
-  const preToken = cookies.split("=")[1];
+  const parsedCookies = cookie.parse(cookies);
+  //const preToken = cookies.split("=")[1];
+  const preToken = parsedCookies["access_token"];
 
   if (!preToken) {
     return res.status(404).json({ refresh: false, message: "Token Not Found" });
@@ -192,11 +198,11 @@ router.get("/refresh", async (req, res) => {
         .status(403)
         .json({ refresh: false, message: "Authentication Failed" });
     } else {
-      res.clearCookie(String(decoded.id));
-      req.cookies[String(decoded.id)] = "";
+      res.clearCookie("access_token");
+      req.cookies["access_token"] = "";
 
       const newToken = createToken(decoded.id);
-      res.cookie(String(decoded.id), newToken, {
+      res.cookie("access_token", newToken, {
         path: "/",
         expires: new Date(Date.now() + cookieExpireIn),
         httpOnly: true,
