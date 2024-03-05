@@ -21,7 +21,8 @@ app.use(
     credentials: true,
   })
 );
-// Set up sessions
+
+// express session
 app.use(
   expressSession({
     name: "session",
@@ -29,21 +30,13 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({ mongoUrl: process.env.DB }),
+    cookie: {
+      secure: false,
+      maxAge: 1000 * 60 * 1,
+      httpOnly: true,
+    },
   })
 );
-// Middleware to generate and attach session identifier to each request
-app.use((req, res, next) => {
-  if (!req.session.sessionId) {
-    req.session.sessionId = generateSessionId(); // Implement a function to generate a unique session ID
-    console.log(req.session.sessionId);
-  }
-  next();
-});
-// Function to generate a unique session ID
-function generateSessionId() {
-  return Math.random().toString(36).substring(2, 15) +
-         Math.random().toString(36).substring(2, 15);
-}
 
 //route MiddleWare
 app.use("/api", userRoutes);

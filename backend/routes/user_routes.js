@@ -94,6 +94,11 @@ router.post("/login", async (req, res) => {
         });
         console.log("Generated Token\n", token);
 
+        //start session
+        if (!req.session.sessionId) {
+          req.session.sessionId = Math.random().toString(36).substring(2, 15); //generate a unique session ID
+        }
+
         return res.status(200).json({ success: true, user: findUser, token });
       } else {
         return res
@@ -153,64 +158,80 @@ router.get("/verifyToken", async (req, res) => {
 });
 
 router.get("/auth_user", async (req, res, next) => {
-  const cookies = req.headers.cookie;
-  const parsedCookies = cookie.parse(cookies);
-  //const token = cookies.split("=")[1];
-  const token = parsedCookies["access_token"];
-
-  if (token) {
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const user = await User.findById(decoded.id);
-
-      if (!user) {
-        res.status(404).json({ authUser: false, message: "User Not Found" });
-      } else {
-        res.status(200).json({
-          authUser: true,
-          message: "Token and User Verified",
-        });
-      }
-    } catch (err) {
-      res.json({ authUser: false, message: "Token Invalid or Expired" });
-    }
+  if (!req.session.sessionId) {
+    return res
+      .status(403)
+      .json({ authUser: false, message: "Session Expired" });
+      
   } else {
-    res.status(404).json({ authUser: false, message: "Token Not Found" });
+    const cookies = req.headers.cookie;
+    const parsedCookies = cookie.parse(cookies);
+    //const token = cookies.split("=")[1];
+    const token = parsedCookies["access_token"];
+
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id);
+
+        if (!user) {
+          res.status(404).json({ authUser: false, message: "User Not Found" });
+        } else {
+          res.status(200).json({
+            authUser: true,
+            message: "Token and User Verified",
+          });
+        }
+      } catch (err) {
+        res.json({ authUser: false, message: "Token Invalid or Expired" });
+      }
+    } else {
+      res.status(404).json({ authUser: false, message: "Token Not Found" });
+    }
   }
 });
 
 router.get("/refresh", async (req, res) => {
-  const cookies = req.headers.cookie;
-  const parsedCookies = cookie.parse(cookies);
-  //const preToken = cookies.split("=")[1];
-  const preToken = parsedCookies["access_token"];
+  if (!req.session.sessionId) {
+    return res
+      .status(403)
+      .json({ authUser: false, message: "Session Expired" });
 
-  if (!preToken) {
-    return res.status(404).json({ refresh: false, message: "Token Not Found" });
-  }
+  } else {
+    const cookies = req.headers.cookie;
+    const parsedCookies = cookie.parse(cookies);
+    //const preToken = cookies.split("=")[1];
+    const preToken = parsedCookies["access_token"];
 
-  jwt.verify(preToken, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) {
-      res
-        .status(403)
-        .json({ refresh: false, message: "Authentication Failed" });
-    } else {
-      res.clearCookie("access_token");
-      req.cookies["access_token"] = "";
-
-      const newToken = createToken(decoded.id);
-      res.cookie("access_token", newToken, {
-        path: "/",
-        expires: new Date(Date.now() + cookieExpireIn),
-        httpOnly: true,
-        sameSite: "lax",
-      });
-      console.log("Refreshed Token\n", newToken);
+    if (!preToken) {
       return res
-        .status(200)
-        .json({ refresh: true, message: "Token Refreshed" });
+        .status(404)
+        .json({ refresh: false, message: "Token Not Found" });
     }
-  });
+
+    jwt.verify(preToken, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) {
+        res
+          .status(403)
+          .json({ refresh: false, message: "Authentication Failed" });
+      } else {
+        res.clearCookie("access_token");
+        req.cookies["access_token"] = "";
+
+        const newToken = createToken(decoded.id);
+        res.cookie("access_token", newToken, {
+          path: "/",
+          expires: new Date(Date.now() + cookieExpireIn),
+          httpOnly: true,
+          sameSite: "lax",
+        });
+        console.log("Refreshed Token\n", newToken);
+        return res
+          .status(200)
+          .json({ refresh: true, message: "Token Refreshed" });
+      }
+    });
+  }
 });
 
 //-------------------------------------
