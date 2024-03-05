@@ -158,15 +158,13 @@ router.get("/verifyToken", async (req, res) => {
 });
 
 router.get("/auth_user", async (req, res, next) => {
-  if (!req.session.sessionId) {
+  if (!req.session || !req.session.sessionId) {
     return res
       .status(403)
       .json({ authUser: false, message: "Session Expired" });
-
   } else {
     const cookies = req.headers.cookie;
     const parsedCookies = cookie.parse(cookies);
-    //const token = cookies.split("=")[1];
     const token = parsedCookies["access_token"];
 
     if (token) {
@@ -192,15 +190,11 @@ router.get("/auth_user", async (req, res, next) => {
 });
 
 router.get("/refresh", async (req, res) => {
-  if (!req.session.sessionId) {
-    return res
-      .status(403)
-      .json({ refresh: false, message: "Session Expired" });
-
+  if (!req.session || !req.session.sessionId) {
+    return res.status(403).json({ refresh: false, message: "Session Expired" });
   } else {
     const cookies = req.headers.cookie;
     const parsedCookies = cookie.parse(cookies);
-    //const preToken = cookies.split("=")[1];
     const preToken = parsedCookies["access_token"];
 
     if (!preToken) {
