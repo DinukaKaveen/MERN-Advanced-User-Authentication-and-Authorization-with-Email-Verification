@@ -162,7 +162,7 @@ router.get("/auth_user", async (req, res, next) => {
     return res
       .status(403)
       .json({ authUser: false, message: "Session Expired" });
-      
+
   } else {
     const cookies = req.headers.cookie;
     const parsedCookies = cookie.parse(cookies);
@@ -195,7 +195,7 @@ router.get("/refresh", async (req, res) => {
   if (!req.session.sessionId) {
     return res
       .status(403)
-      .json({ authUser: false, message: "Session Expired" });
+      .json({ refresh: false, message: "Session Expired" });
 
   } else {
     const cookies = req.headers.cookie;
