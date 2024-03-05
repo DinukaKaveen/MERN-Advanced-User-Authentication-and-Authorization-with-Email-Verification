@@ -15,13 +15,13 @@ function Dashboard() {
       .then((response) => {
         if (response.data.authUser) {
           //setUser(response.data.user);
-          console.log(response.data.authUser);
         } else {
           navigate("/");
         }
       })
       .catch((err) => {
         console.error(err);
+        navigate("/");
       });
   };
 
@@ -37,6 +37,7 @@ function Dashboard() {
       })
       .catch((err) => {
         console.error(err);
+        navigate("/");
       });
   };
 
