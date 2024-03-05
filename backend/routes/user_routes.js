@@ -133,30 +133,6 @@ router.get("/:id/verify/:token", async (req, res) => {
   }
 });
 
-// verify token when laoding dashboard
-router.get("/verifyToken", async (req, res) => {
-  try {
-    const token = req.cookies["access-token"];
-
-    if (token) {
-      const validateToken = await jwt.verify(token, process.env.JWT_SECRET);
-      if (validateToken) {
-        res.json({ verifyToken: true, message: "Token Verified" });
-        //redirect to dashboard
-      } else {
-        res.json({ verifyToken: false, message: "Invalid Token or Expired" });
-        // redirect to login
-      }
-    } else {
-      res.json({ verifyToken: false, message: "Token Not Found" });
-      // redirect to login
-    }
-  } catch (error) {
-    console.error(error);
-    res.json({ verifyToken: false, message: "Token Expired" });
-  }
-});
-
 router.get("/auth_user", async (req, res, next) => {
   if (!req.session || !req.session.sessionId) {
     return res
