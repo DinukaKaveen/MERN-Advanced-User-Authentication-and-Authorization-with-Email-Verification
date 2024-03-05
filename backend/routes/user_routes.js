@@ -95,9 +95,8 @@ router.post("/login", async (req, res) => {
         console.log("Generated Token\n", token);
 
         //start session
-        if (!req.session.sessionId) {
-          req.session.sessionId = Math.random().toString(36).substring(2, 15); //generate a unique session ID
-        }
+        req.session.sessionId = Math.random().toString(36).substring(2, 15); //generate a unique session ID
+        req.session.createdAt = Date.now();
 
         return res.status(200).json({ success: true, user: findUser, token });
       } else {
