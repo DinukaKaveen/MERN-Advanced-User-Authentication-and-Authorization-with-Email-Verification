@@ -32,7 +32,7 @@ app.use(
     store: MongoStore.create({ mongoUrl: process.env.DB }),
     cookie: {
       secure: false,
-      maxAge: 1000 * 60 * 40,
+      maxAge: 1000 * 60 * 1,
       httpOnly: true,
     },
   })
