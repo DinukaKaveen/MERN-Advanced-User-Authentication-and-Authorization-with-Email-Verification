@@ -53,7 +53,7 @@ function Dashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  return <div>Dashboard</div>;
+  return <div>{user}</div>;
 }
 
 export default Dashboard;
