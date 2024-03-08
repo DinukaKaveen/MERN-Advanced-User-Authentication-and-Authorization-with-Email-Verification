@@ -138,7 +138,7 @@ router.get("/auth_user", async (req, res, next) => {
       .status(403)
       .json({ authUser: false, message: "Session Expired" });
   } else {
-    const token = req.cookies["access-token"];
+    const token = req.cookies["access_token"];
     if (token) {
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -149,6 +149,7 @@ router.get("/auth_user", async (req, res, next) => {
         } else {
           res.status(200).json({
             authUser: true,
+            user_id: user._id,
             message: "Token and User Verified",
           });
         }
@@ -164,36 +165,39 @@ router.get("/auth_user", async (req, res, next) => {
 router.get("/refresh", async (req, res) => {
   if (!req.session || !req.session.sessionId) {
     return res.status(403).json({ refresh: false, message: "Session Expired" });
-  } else {
-    const preToken = req.cookies["access-token"];
-    if (!preToken) {
+  }
+
+  const preToken = req.cookies["access_token"];
+  if (!preToken) {
+    return res.status(404).json({ refresh: false, message: "Token Not Found" });
+  }
+
+  try {
+    const decoded = jwt.verify(preToken, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+
+    if (!user) {
+      res.status(404).json({ refresh: false, message: "User Not Found" });
+    } else {
+      res.clearCookie("access_token");
+      req.cookies["access_token"] = "";
+
+      const newToken = createToken(decoded.id);
+      res.cookie("access_token", newToken, {
+        path: "/",
+        expires: new Date(Date.now() + cookieExpireIn),
+        httpOnly: true,
+        sameSite: "lax",
+      });
+      console.log("Refreshed Token\n", newToken);
+
+      const user = await User.findById(decoded.id);
       return res
-        .status(404)
-        .json({ refresh: false, message: "Token Not Found" });
+        .status(200)
+        .json({ refresh: true, user_id: user._id, message: "Token Refreshed" });
     }
-
-    jwt.verify(preToken, process.env.JWT_SECRET, (err, decoded) => {
-      if (err) {
-        res
-          .status(403)
-          .json({ refresh: false, message: "Authentication Failed" });
-      } else {
-        res.clearCookie("access_token");
-        req.cookies["access_token"] = "";
-
-        const newToken = createToken(decoded.id);
-        res.cookie("access_token", newToken, {
-          path: "/",
-          expires: new Date(Date.now() + cookieExpireIn),
-          httpOnly: true,
-          sameSite: "lax",
-        });
-        console.log("Refreshed Token\n", newToken);
-        return res
-          .status(200)
-          .json({ refresh: true, message: "Token Refreshed" });
-      }
-    });
+  } catch (error) {
+    res.json({ authUser: false, message: "Token Invalid or Expired" });
   }
 });
 

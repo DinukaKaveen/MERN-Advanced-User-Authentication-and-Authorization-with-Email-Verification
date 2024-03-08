@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 function Dashboard() {
   const navigate = useNavigate();
-  //const [user, setUser] = useState();
+  const [user, setUser] = useState();
 
   axios.defaults.withCredentials = true;
   let firstRender = true;
@@ -14,7 +14,7 @@ function Dashboard() {
       .get("http://localhost:8000/api/auth_user")
       .then((response) => {
         if (response.data.authUser) {
-          //setUser(response.data.user);
+          setUser(response.data.user_id);
         } else {
           navigate("/");
         }
@@ -30,7 +30,7 @@ function Dashboard() {
       .get("http://localhost:8000/api/refresh")
       .then((response) => {
         if (response.data.refresh) {
-          //setUser(response.data.user);
+          setUser(response.data.user_id);
         } else {
           navigate("/");
         }
