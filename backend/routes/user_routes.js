@@ -98,7 +98,7 @@ router.post("/login", async (req, res) => {
         req.session.sessionId = Math.random().toString(36).substring(2, 15); //generate a unique session ID
         req.session.createdAt = Date.now();
 
-        return res.status(200).json({ success: true, user: findUser, token });
+        return res.status(200).json({ success: true, token });
       } else {
         return res
           .status(400)
