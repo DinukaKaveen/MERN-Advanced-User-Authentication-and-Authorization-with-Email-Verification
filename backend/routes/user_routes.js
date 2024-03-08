@@ -138,10 +138,7 @@ router.get("/auth_user", async (req, res, next) => {
       .status(403)
       .json({ authUser: false, message: "Session Expired" });
   } else {
-    const cookies = req.headers.cookie;
-    const parsedCookies = cookie.parse(cookies);
-    const token = parsedCookies["access_token"];
-
+    const token = req.cookies["access-token"];
     if (token) {
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -168,10 +165,7 @@ router.get("/refresh", async (req, res) => {
   if (!req.session || !req.session.sessionId) {
     return res.status(403).json({ refresh: false, message: "Session Expired" });
   } else {
-    const cookies = req.headers.cookie;
-    const parsedCookies = cookie.parse(cookies);
-    const preToken = parsedCookies["access_token"];
-
+    const preToken = req.cookies["access-token"];
     if (!preToken) {
       return res
         .status(404)
