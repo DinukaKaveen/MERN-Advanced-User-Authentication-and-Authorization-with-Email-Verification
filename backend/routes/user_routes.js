@@ -17,6 +17,11 @@ const createToken = (id) => {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 };
+const createEmailToken = (email) => {
+  return jwt.sign({ email }, process.env.JWT_SECRET, {
+    expiresIn: process.env.EMAIL_JWT_EXPIRES_IN,
+  });
+};
 
 // user register
 router.post("/register", async (req, res) => {
@@ -36,7 +41,7 @@ router.post("/register", async (req, res) => {
       lastName: req.body.lastName,
       email: req.body.email,
       password: hashedPassword,
-      emailToken: crypto.randomBytes(64).toString("hex"),
+      emailToken: createEmailToken(req.body.email),
     });
 
     await user.save();
@@ -118,9 +123,22 @@ router.post("/login", async (req, res) => {
 router.get("/:id/verify/:token", async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.params.id });
+    const emailToken = req.params.token;
+
+    jwt.verify(emailToken, process.env.JWT_SECRET, async (err, decoded) => {
+      if (err) {
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message:
+              "Invalid Verification or Expired. Login to get new verification link",
+          });
+      }
+    });
 
     if (user) {
-      await User.updateOne({ _id: user._id, verified: true, emailToken: null });
+      await User.findByIdAndUpdate(user._id, { verified: true, emailToken: null });
       res.json({ success: true, message: "Account Verified Successfully..." });
     } else {
       res.json({ success: false, message: "404 User Not Found !" });
