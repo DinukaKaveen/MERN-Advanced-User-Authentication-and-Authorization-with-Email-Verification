@@ -143,6 +143,7 @@ router.get("/:id/verify/:token", async (req, res) => {
     } else {
       res.json({ success: false, message: "404 User Not Found !" });
     }
+    
   } catch (error) {
     console.error(error);
     res.json({ success: false, message: "Internal Server Error !" });
