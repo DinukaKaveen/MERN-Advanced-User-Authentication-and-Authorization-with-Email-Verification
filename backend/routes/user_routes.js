@@ -137,7 +137,7 @@ router.get("/:id/verify/:token", async (req, res) => {
         return res.status(400).json({
           success: false,
           message:
-            "Invalid Verification or Expired. Login to get a new verification link",
+            "Invalid Verification or Expired",
         });
       }
 
