@@ -15,6 +15,7 @@ function UserVerify() {
         })
         .catch((err) => {
           console.error(err);
+          setMessage(err.response.data.message);
         });
     };
     verifyUser();
