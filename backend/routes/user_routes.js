@@ -72,14 +72,6 @@ router.post("/login", async (req, res) => {
     const findUser = await User.findOne({ email: req.body.email });
 
     if (findUser) {
-      //check user verified
-      if (!findUser.verified) {
-        return res.json({
-          success: false,
-          message: "Please Check Your Email to Verify Your Account",
-        });
-      }
-
       //check password
       const validPassword = await bcrypt.compare(
         req.body.password,
@@ -87,9 +79,21 @@ router.post("/login", async (req, res) => {
       );
 
       if (validPassword) {
-        //create token
-        const token = createToken(findUser._id);
+        //send new verification email if not verified
+        if (!findUser.verified) {
+          sendVerificationEmail(
+            findUser._id,
+            findUser.firstName,
+            findUser.email,
+            createEmailToken(findUser.email)
+          );
+          return res.json({
+            success: false,
+            message: "Please Check Your Email to Verify Your Account",
+          });
+        }
         //store token in cookie
+        const token = createToken(findUser._id);
         res.cookie("access_token", token, {
           path: "/",
           expires: new Date(Date.now() + cookieExpireIn),
@@ -146,11 +150,9 @@ router.get("/:id/verify/:token", async (req, res) => {
         success: true,
         message: "Account Verified Successfully...",
       });
-
     } else {
       return res.json({ success: false, message: "404 User Not Found!" });
     }
-
   } catch (error) {
     console.error(error);
     return res
