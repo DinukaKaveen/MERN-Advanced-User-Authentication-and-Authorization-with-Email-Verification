@@ -125,32 +125,32 @@ router.get("/:id/verify/:token", async (req, res) => {
     const user = await User.findOne({ _id: req.params.id });
     const emailToken = req.params.token;
 
-    // Verify token
-    try {
-      const decoded = jwt.verify(emailToken, process.env.JWT_SECRET);
-    
-    } catch (err) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Invalid Verification or Expired. Login to get a new verification link",
-      });
-    }
-
     if (user) {
+      // Verify token
+      try {
+        jwt.verify(emailToken, process.env.JWT_SECRET);
+      } catch (err) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Invalid Verification or Expired. Login to get a new verification link",
+        });
+      }
+
+      // Update user document
       await User.findByIdAndUpdate(user._id, {
         verified: true,
         emailToken: null,
       });
-
       return res.json({
         success: true,
         message: "Account Verified Successfully...",
       });
+
     } else {
       return res.json({ success: false, message: "404 User Not Found!" });
     }
-    
+
   } catch (error) {
     console.error(error);
     return res
