@@ -1,2 +1,2 @@
-# MERN Login SignUp with Email Verfication
+# MERN Advance User Authentication and Authorization with Email Verification
  
