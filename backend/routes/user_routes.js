@@ -134,30 +134,22 @@ router.get("/:id/verify/:token", async (req, res) => {
       try {
         jwt.verify(emailToken, process.env.JWT_SECRET);
       } catch (err) {
-        return res.status(400).json({
-          success: false,
-          message:
-            "Invalid Verification or Expired",
-        });
+        return res.status(400).json({ success: false, message: "Invalid Verification or Expired", });
       }
-
+      
       // Update user document
       await User.findByIdAndUpdate(user._id, {
         verified: true,
         emailToken: null,
       });
-      return res.json({
-        success: true,
-        message: "Account Verified Successfully...",
-      });
+      return res.json({ success: true, message: "Account Verified Successfully...", });
+
     } else {
       return res.json({ success: false, message: "404 User Not Found!" });
     }
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal Server Error!" });
+    return res.status(500).json({ success: false, message: "Internal Server Error!" });
   }
 });
 
