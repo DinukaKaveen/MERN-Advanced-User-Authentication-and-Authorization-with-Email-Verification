@@ -136,7 +136,7 @@ router.get("/:id/verify/:token", async (req, res) => {
       } catch (err) {
         return res.status(400).json({ success: false, message: "Invalid Verification or Expired", });
       }
-      
+
       // Update user document
       await User.findByIdAndUpdate(user._id, {
         verified: true,
@@ -218,7 +218,7 @@ router.get("/refresh", async (req, res) => {
         .json({ refresh: true, user_id: user._id, message: "Token Refreshed" });
     }
   } catch (error) {
-    res.json({ authUser: false, message: "Token Invalid or Expired" });
+    res.json({ refresh: false, message: "Token Invalid or Expired" });
   }
 });
 
