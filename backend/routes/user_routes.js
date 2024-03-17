@@ -212,7 +212,6 @@ router.get("/refresh", async (req, res) => {
       });
       console.log("Refreshed Token\n", newToken);
 
-      const user = await User.findById(decoded.id);
       return res
         .status(200)
         .json({ refresh: true, user_id: user._id, message: "Token Refreshed" });
